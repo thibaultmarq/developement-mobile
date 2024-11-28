@@ -5,7 +5,7 @@ plugins {
 
 android {
     namespace = "com.tibomrq.todotibomrq"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.tibomrq.todotibomrq"
@@ -45,4 +45,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.activity.ktx)
 }
