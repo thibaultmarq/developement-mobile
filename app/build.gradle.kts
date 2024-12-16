@@ -83,4 +83,8 @@ dependencies {
 
     implementation (libs.androidx.lifecycle.viewmodel.ktx) // Version à adapter
     implementation (libs.androidx.fragment.ktx.v161)
+
+
+    implementation(libs.coil.compose)
+    implementation(libs.coil.network.okhttp)
 }

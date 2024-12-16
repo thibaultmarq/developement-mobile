@@ -8,11 +8,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
+import coil3.load
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.tibomrq.todotibomrq.R
 import com.tibomrq.todotibomrq.data.Api
@@ -42,6 +44,8 @@ class TaskListFragment : Fragment() {
     )
     //private val adapter = TaskListAdapter()
     private val viewModel: TaskListViewModel by viewModels()
+
+
     override fun onResume() {
         super.onResume()
         lifecycleScope.launch {
@@ -49,7 +53,9 @@ class TaskListFragment : Fragment() {
             val userTextView = view?.findViewById<TextView>(R.id.textView2)
             userTextView?.text = user.name
         }
+        val imageView = view?.findViewById<ImageView>(R.id.imageView2)
         viewModel.refresh()
+        imageView?.load("https://goo.gl/gEgYUd")
     }
 
 
