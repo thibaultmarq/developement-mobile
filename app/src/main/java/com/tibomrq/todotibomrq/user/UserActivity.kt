@@ -1,13 +1,16 @@
 package com.tibomrq.todotibomrq.user
 
 import android.os.Bundle
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,6 +24,7 @@ import coil3.compose.AsyncImage
 import com.tibomrq.todotibomrq.R
 
 class UserActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -30,9 +34,15 @@ class UserActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+
         setContent {
             var bitmap: Bitmap? by remember { mutableStateOf(null) }
             var uri: Uri? by remember { mutableStateOf(null) }
+            val takePicture = rememberLauncherForActivityResult(
+                ActivityResultContracts.TakePicturePreview()) {
+                bitmap = it
+            }
             Column {
                 AsyncImage(
                     modifier = Modifier.fillMaxHeight(.2f),
@@ -40,7 +50,7 @@ class UserActivity : AppCompatActivity() {
                     contentDescription = null
                 )
                 Button(
-                    onClick = {},
+                    onClick = {takePicture},
                     content = { Text("Take picture") }
                 )
                 Button(
@@ -49,8 +59,8 @@ class UserActivity : AppCompatActivity() {
                 )
             }
         }
-
-
     }
+
+
 
 }
