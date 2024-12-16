@@ -20,6 +20,7 @@ import com.tibomrq.todotibomrq.R
 import com.tibomrq.todotibomrq.data.Api
 import com.tibomrq.todotibomrq.data.TaskListViewModel
 import com.tibomrq.todotibomrq.detail.DetailActivity
+import com.tibomrq.todotibomrq.user.UserActivity
 import kotlinx.coroutines.launch
 import java.util.UUID
 
@@ -56,6 +57,8 @@ class TaskListFragment : Fragment() {
         val imageView = view?.findViewById<ImageView>(R.id.imageView2)
         viewModel.refresh()
         imageView?.load("https://goo.gl/gEgYUd")
+        val intent = Intent(context, UserActivity::class.java)
+        imageView?.setOnClickListener(){startActivity(intent)}
     }
 
 
