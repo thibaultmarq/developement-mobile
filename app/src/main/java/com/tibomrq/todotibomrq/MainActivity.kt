@@ -3,6 +3,7 @@ package com.tibomrq.todotibomrq
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.ViewStructure
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
@@ -24,18 +25,19 @@ class MainActivity : AppCompatActivity() {
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
+
+
         }
-/*
-        findViewById<FloatingActionButton>(R.id.floatingActionButton).setOnClickListener(){
-            findViewById<FloatingActionButton>(R.id.floatingActionButton).setOnClickListener(){
-                // Instanciation d'un objet task avec des données préremplies:
-                val newTask = Task(id = UUID.randomUUID().toString(), title = "Task ${currentlist.size + 1}")
-                currentlist = currentlist + newTask
-            }
-        } */
+
+
+
+
+
+
 
 
 
     }
+
 
 }

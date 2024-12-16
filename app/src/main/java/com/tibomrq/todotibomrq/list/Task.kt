@@ -1,5 +1,19 @@
 package com.tibomrq.todotibomrq.list
 
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 
-data class Task(val id:String = "0", val title:String = "title", val description: String = "descrp")
+@Serializable
+data class Task(
+    @SerialName("id")
+    val id : String,
+    @SerialName("content")
+    val title : String,
+    @SerialName("description")
+    val description : String ="") : java.io.Serializable {
+    companion object {
+        const val TASK_KEY = "task"
+    }
+
+}
