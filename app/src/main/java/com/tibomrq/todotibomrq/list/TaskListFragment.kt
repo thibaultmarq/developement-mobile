@@ -15,6 +15,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import coil3.load
+import coil3.request.error
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.tibomrq.todotibomrq.R
 import com.tibomrq.todotibomrq.data.Api
@@ -53,12 +54,18 @@ class TaskListFragment : Fragment() {
             val user = Api.userWebService.fetchUser().body()!!
             val userTextView = view?.findViewById<TextView>(R.id.textView2)
             userTextView?.text = user.name
+            val imageView = view?.findViewById<ImageView>(R.id.imageView2)
+            viewModel.refresh()
+            imageView?.load("https://goo.gl/gEgYUd")
+            val intent = Intent(context, UserActivity::class.java)
+            imageView?.setOnClickListener(){startActivity(intent)}
+            imageView?.load(user.avatar) {
+                error(R.drawable.ic_launcher_background) // image par défaut en cas d'erreur
+            }
         }
-        val imageView = view?.findViewById<ImageView>(R.id.imageView2)
-        viewModel.refresh()
-        imageView?.load("https://goo.gl/gEgYUd")
-        val intent = Intent(context, UserActivity::class.java)
-        imageView?.setOnClickListener(){startActivity(intent)}
+
+
+
     }
 
 
