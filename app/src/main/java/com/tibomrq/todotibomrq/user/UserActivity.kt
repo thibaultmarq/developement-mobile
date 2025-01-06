@@ -12,6 +12,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -38,6 +39,9 @@ import java.io.File
 
 class UserActivity : AppCompatActivity() {
 
+
+    private val viewModel : UserViewModel by viewModels()
+
     private val captureUri by lazy {
         contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues())
     }
@@ -62,18 +66,17 @@ class UserActivity : AppCompatActivity() {
 
             val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
                 if (success) uri = captureUri
+                composeScope.launch {
+                    uri?.let { viewModel.updateAvatar(it.toRequestBody()) } }
             }
             val pickPicture = rememberLauncherForActivityResult(
-                ActivityResultContracts.PickVisualMedia()) {
+                ActivityResultContracts.PickVisualMedia()) { it ->
                 uri = it
                 composeScope.launch {
-                    uri?.let { it1 -> userWebService.updateAvatar(it1.toRequestBody()) }
+                    uri?.let { it1 -> viewModel.updateAvatar(it1.toRequestBody()) }
 
                 }
-                composeScope.launch {
-                    bitmap?.let { it1 ->  }
-
-                }
+                
             }
             val pickPictureWithPerm = rememberLauncherForActivityResult(
                 ActivityResultContracts.RequestPermission()) {
