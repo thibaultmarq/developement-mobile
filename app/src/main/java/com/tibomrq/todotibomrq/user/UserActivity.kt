@@ -11,12 +11,12 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.launch
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 
 import androidx.compose.runtime.getValue
@@ -60,7 +60,7 @@ class UserActivity : AppCompatActivity() {
 
             val userWebService = Api.userWebService
 
-            var bitmap: Bitmap? by remember { mutableStateOf(null) }
+            val bitmap: Bitmap? by remember { mutableStateOf(null) }
             var uri: Uri? by remember { mutableStateOf(null) }
             val composeScope = rememberCoroutineScope()
 
@@ -70,18 +70,22 @@ class UserActivity : AppCompatActivity() {
                     uri?.let { viewModel.updateAvatar(it.toRequestBody()) } }
             }
             val pickPicture = rememberLauncherForActivityResult(
-                ActivityResultContracts.PickVisualMedia()) { it ->
+                ActivityResultContracts.PickVisualMedia()) {
                 uri = it
                 composeScope.launch {
                     uri?.let { it1 -> viewModel.updateAvatar(it1.toRequestBody()) }
 
                 }
-                
+
             }
             val pickPictureWithPerm = rememberLauncherForActivityResult(
                 ActivityResultContracts.RequestPermission()) {
                 pickPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
             }
+
+            viewModel.getUsername()
+            var fetchedName = viewModel.usernameStateFlow
+            var name by remember { mutableStateOf( fetchedName ?: "") }
 
             Column {
                 AsyncImage(
@@ -89,6 +93,15 @@ class UserActivity : AppCompatActivity() {
                     model = bitmap ?: uri,
                     contentDescription = null
                 )
+
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = {
+                        name = it;
+
+                    }
+                )
+
                 Button(
                     onClick = { captureUri?.let { takePicture.launch(it) } },
                     content = { Text("Take picture") }
