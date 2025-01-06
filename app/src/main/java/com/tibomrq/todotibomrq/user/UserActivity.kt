@@ -1,8 +1,11 @@
 package com.tibomrq.todotibomrq.user
 
+import android.content.ContentValues
 import android.graphics.Bitmap
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,7 +17,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -24,15 +27,20 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import coil3.compose.AsyncImage
+
 import com.tibomrq.todotibomrq.R
 import com.tibomrq.todotibomrq.data.Api
 import kotlinx.coroutines.launch
+
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 
 class UserActivity : AppCompatActivity() {
 
+    private val captureUri by lazy {
+        contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues())
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -51,13 +59,9 @@ class UserActivity : AppCompatActivity() {
             var bitmap: Bitmap? by remember { mutableStateOf(null) }
             var uri: Uri? by remember { mutableStateOf(null) }
             val composeScope = rememberCoroutineScope()
-            val takePicture = rememberLauncherForActivityResult(
-                ActivityResultContracts.TakePicturePreview()) {
-                bitmap = it
-                composeScope.launch {
-                    bitmap?.let { it1 -> userWebService.updateAvatar(it1.toRequestBody()) }
 
-                }
+            val takePicture = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+                if (success) uri = captureUri
             }
             val pickPicture = rememberLauncherForActivityResult(
                 ActivityResultContracts.PickVisualMedia()) {
@@ -71,6 +75,10 @@ class UserActivity : AppCompatActivity() {
 
                 }
             }
+            val pickPictureWithPerm = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestPermission()) {
+                pickPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            }
 
             Column {
                 AsyncImage(
@@ -79,11 +87,17 @@ class UserActivity : AppCompatActivity() {
                     contentDescription = null
                 )
                 Button(
-                    onClick = {takePicture.launch()},
+                    onClick = { captureUri?.let { takePicture.launch(it) } },
                     content = { Text("Take picture") }
                 )
                 Button(
-                    onClick = {pickPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))},
+                    onClick = {
+                        if (Build.VERSION.SDK_INT >= 29) {
+                            pickPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))}
+                        else {
+                            pickPictureWithPerm.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                }}
+                    ,
                     content = { Text("Pick photo") }
                 )
             }
