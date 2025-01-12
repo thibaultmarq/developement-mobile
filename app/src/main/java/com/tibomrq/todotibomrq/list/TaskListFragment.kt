@@ -77,7 +77,8 @@ class TaskListFragment : Fragment() {
         override fun onClickEdit(task: Task) {
             val intent = Intent(context, DetailActivity::class.java)
             intent.putExtra(Task.TASK_KEY, task)
-            editTask.launch(intent)}
+            editTask.launch(intent)
+        }
     }
     val adapter = TaskListAdapter(adapterListener)
 

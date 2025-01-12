@@ -1,11 +1,14 @@
 package com.tibomrq.todotibomrq.user
 
 import android.content.ContentValues
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,6 +21,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,7 +32,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.viewModelScope
 import coil3.compose.AsyncImage
+import com.google.android.material.snackbar.Snackbar
 
 import com.tibomrq.todotibomrq.R
 import com.tibomrq.todotibomrq.data.Api
@@ -45,6 +52,30 @@ class UserActivity : AppCompatActivity() {
     private val captureUri by lazy {
         contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, ContentValues())
     }
+
+    private fun pickPhotoWithPermission() {
+        val storagePermission = android.Manifest.permission.READ_EXTERNAL_STORAGE
+        val permissionStatus = checkSelfPermission(storagePermission)
+        val isAlreadyAccepted = permissionStatus == PackageManager.PERMISSION_GRANTED
+        val isExplanationNeeded = shouldShowRequestPermissionRationale(storagePermission)
+        when {
+            isAlreadyAccepted -> {pickPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+            Log.e("bjr", "arv")}
+            isExplanationNeeded -> showMessage("L'autorisation est nécessaire pour sélectionner une image depuis les fichiers")// afficher une explication
+            else -> {
+               pickPictureWithPerm.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            }
+
+        }// lancer la demande de permission et afficher une explication en cas de refus
+    }
+
+
+    private fun showMessage(message: String) {
+        Snackbar.make(findViewById(android.R.id.content), message, Snackbar.LENGTH_LONG).show()
+    }
+
+    lateinit var pickPicture: ManagedActivityResultLauncher<PickVisualMediaRequest, Uri?>
+    lateinit var pickPictureWithPerm: ManagedActivityResultLauncher<String, Boolean>
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -69,7 +100,7 @@ class UserActivity : AppCompatActivity() {
                 composeScope.launch {
                     uri?.let { viewModel.updateAvatar(it.toRequestBody()) } }
             }
-            val pickPicture = rememberLauncherForActivityResult(
+            pickPicture = rememberLauncherForActivityResult(
                 ActivityResultContracts.PickVisualMedia()) {
                 uri = it
                 composeScope.launch {
@@ -78,14 +109,32 @@ class UserActivity : AppCompatActivity() {
                 }
 
             }
-            val pickPictureWithPerm = rememberLauncherForActivityResult(
-                ActivityResultContracts.RequestPermission()) {
-                pickPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+
+
+
+            pickPictureWithPerm = rememberLauncherForActivityResult(
+                ActivityResultContracts.RequestPermission()) { isGranted ->
+                    if (isGranted) {
+                        pickPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                    }
+                    else {
+                        showMessage("L'autorisation est nécessaire")
+                    }
             }
 
             viewModel.getUsername()
-            var fetchedName = viewModel.usernameStateFlow
-            var name by remember { mutableStateOf( fetchedName ?: "") }
+
+
+            // Collect the username from the ViewModel
+            val usernameState = viewModel.usernameStateFlow.collectAsState(initial = "")
+
+            // Local state for the TextField
+            var name by remember { mutableStateOf(usernameState.value) }
+
+            // Synchronize the local state with the ViewModel's state
+            LaunchedEffect(usernameState.value) {
+                name = usernameState.value // Update local state when the ViewModel's state changes
+            }
 
             Column {
                 AsyncImage(
@@ -95,9 +144,10 @@ class UserActivity : AppCompatActivity() {
                 )
 
                 OutlinedTextField(
-                    value = "",
+                    value = name,
                     onValueChange = {
                         name = it;
+                        viewModel.updateName(name, name)
 
                     }
                 )
@@ -111,7 +161,7 @@ class UserActivity : AppCompatActivity() {
                         if (Build.VERSION.SDK_INT >= 29) {
                             pickPicture.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))}
                         else {
-                            pickPictureWithPerm.launch(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+                            pickPhotoWithPermission()
                 }}
                     ,
                     content = { Text("Pick photo") }

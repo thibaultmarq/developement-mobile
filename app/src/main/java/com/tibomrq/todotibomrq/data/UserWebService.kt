@@ -19,7 +19,5 @@ interface UserWebService {
     @POST("sync/v9/sync")
     suspend fun updateName(@Body commands: UserUpdate) : Response<Unit>
 
-    @GET("sysnc/v9/sync")
-    suspend fun getUsername() : Response<String>
 }
 

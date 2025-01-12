@@ -17,6 +17,7 @@ class UserViewModel : ViewModel() {
 
     public val usernameStateFlow = MutableStateFlow<String>("")
 
+
     fun updateAvatar(avatar: MultipartBody.Part) {
         viewModelScope.launch {
             val response = webService.updateAvatar(avatar)
@@ -29,9 +30,9 @@ class UserViewModel : ViewModel() {
     }
 
 
-    fun updateName(uuid : String, new_name : String) {
+    fun updateName(uuid : String, newName : String) {
         viewModelScope.launch {
-            val userUpdate = UserUpdate.userUpdate(uuid =  uuid, fullName = new_name)
+            val userUpdate = UserUpdate.userUpdate(uuid =  uuid, fullName = newName)
             val response = webService.updateName(userUpdate)
             if (!response.isSuccessful) {
                 Log.e("Network", "Error: ${response.raw()}")
@@ -42,13 +43,14 @@ class UserViewModel : ViewModel() {
 
     fun getUsername() {
         viewModelScope.launch {
-            val response = webService.getUsername()
+            val response = webService.fetchUser()
             if (!response.isSuccessful) {
                 Log.e("Network", "Error: ${response.raw()}")
                 return@launch
             }
-            val fetchedUsername = response.body()!!
+            val fetchedUsername = response.body()!!.name
             usernameStateFlow.value = fetchedUsername
+            Log.e("username", usernameStateFlow.value)
         }
     }
 
